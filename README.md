@@ -1,1 +1,1 @@
-# AirBnB Clone - The Console
+# AirBnB Clone - RESTful API

@@ -1,34 +1,33 @@
 #!/usr/bin/python3
-""" app.py file """
-import os
-from models import storage
+"""
+The RESTful api starts here. The api aids data access in the app.
+"""
+from os import getenv
+
 from flask import Flask, jsonify
-from api.v1.views import app_views
 from flask_cors import CORS
-"""from flasgger import Swagger"""
+
+from api.v1.views import app_views
+from models import storage
 
 app = Flask(__name__)
-"""swagger = swagger(app)"""
-db = os.environ.get('HBNB_TYPE_STORAGE', 'json_file')
-host = os.environ.get('HBNB_API_HOST', '0.0.0.0')
-port = os.environ.get('HBNB_API_PORT', '5002')
 app.url_map.strict_slashes = False
 app.register_blueprint(app_views)
-CORS(app, resources={r"/api/": {"origins": "0.0.0.0"}})
+CORS(app, origins=["0.0.0.0"])
+host = getenv("HBNB_API_HOST", "0.0.0.0")
+port = getenv("HBNB_API_PORT", "5000")
 
 
 @app.teardown_appcontext
-def close(cls):
-    """close"""
+def teardown(exception):
+    """Cleanup operations"""
     storage.close()
 
 
 @app.errorhandler(404)
-def not_found(e):
-    """error 404"""
+def not_found(error):
     return jsonify({"error": "Not found"}), 404
 
 
-if __name__ == '__main__':
-    """Initialize api"""
-    app.run(host=host, port=int(port), threaded=True)
+if __name__ == "__main__":
+    app.run(host, port, threaded=True, debug=True)

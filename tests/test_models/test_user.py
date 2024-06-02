@@ -3,7 +3,6 @@
 Contains the TestUserDocs classes
 """
 
-from os import getenv
 from datetime import datetime
 import inspect
 import models
@@ -58,10 +57,8 @@ class TestUserDocs(unittest.TestCase):
                             "{:s} method needs a docstring".format(func[0]))
 
 
-@unittest.skipIf(getenv("HBNB_TYPE_STORAGE") != 'db', "file_storage")
 class TestUser(unittest.TestCase):
     """Test the User class"""
-
     def test_is_subclass(self):
         """Test that User is a subclass of BaseModel"""
         user = User()
@@ -78,6 +75,15 @@ class TestUser(unittest.TestCase):
             self.assertEqual(user.email, None)
         else:
             self.assertEqual(user.email, "")
+
+    def test_password_attr(self):
+        """Test that User has attr password, and it's an empty string"""
+        user = User()
+        self.assertTrue(hasattr(user, "password"))
+        if models.storage_t == 'db':
+            self.assertEqual(user.password, None)
+        else:
+            self.assertEqual(user.password, "")
 
     def test_first_name_attr(self):
         """Test that User has attr first_name, and it's an empty string"""

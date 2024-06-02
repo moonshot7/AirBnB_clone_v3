@@ -10,7 +10,6 @@ import sqlalchemy
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 import uuid
-import hashlib
 
 time = "%Y-%m-%dT%H:%M:%S.%f"
 
@@ -22,6 +21,7 @@ else:
 
 class BaseModel:
     """The BaseModel class from which future classes will be derived"""
+
     if models.storage_t == "db":
         id = Column(String(60), primary_key=True)
         created_at = Column(DateTime, default=datetime.utcnow)
@@ -33,9 +33,6 @@ class BaseModel:
             for key, value in kwargs.items():
                 if key != "__class__":
                     setattr(self, key, value)
-            if kwargs.get("password"):
-                result = hashlib.md5(kwargs["password"].encode())
-                self.password = result.hexdigest()
             if kwargs.get("created_at", None) and type(self.created_at) is str:
                 self.created_at = datetime.strptime(kwargs["created_at"], time)
             else:
@@ -53,8 +50,9 @@ class BaseModel:
 
     def __str__(self):
         """String representation of the BaseModel class"""
-        return "[{:s}] ({:s}) {}".format(self.__class__.__name__, self.id,
-                                         self.__dict__)
+        return "[{:s}] ({:s}) {}".format(
+            self.__class__.__name__, self.id, self.__dict__
+        )
 
     def save(self):
         """updates the attribute 'updated_at' with the current datetime"""
@@ -62,7 +60,7 @@ class BaseModel:
         models.storage.new(self)
         models.storage.save()
 
-    def to_dict(self):
+    def to_dict(self, save_to_file=False):
         """returns a dictionary containing all keys/values of the instance"""
         new_dict = self.__dict__.copy()
         if "created_at" in new_dict:
@@ -72,9 +70,9 @@ class BaseModel:
         new_dict["__class__"] = self.__class__.__name__
         if "_sa_instance_state" in new_dict:
             del new_dict["_sa_instance_state"]
-        if models.storage_t == "db":
+        if save_to_file is False:
             if "password" in new_dict:
-                del new_dict['password']
+                del new_dict["password"]
         return new_dict
 
     def delete(self):
